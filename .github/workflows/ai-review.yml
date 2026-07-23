@@ -22,4 +22,6 @@ jobs:
         with:
           gemini-key: ${{ secrets.GEMINI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Free tier has 0 quota for gemini-2.5-pro; flash is allowed.
+          model: gemini-2.0-flash
           review-title: Gemini Code Review
