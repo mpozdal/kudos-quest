@@ -1,23 +1,24 @@
 name: Gemini AI Code Review
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+    pull_request:
+        types: [opened, synchronize]
 
 jobs:
-  review:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
+    review:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: write
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      - name: Code Review by Gemini Pro
-        uses: coderabbitai/ai-pr-reviewer@latest 
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+            - name: Code Review by Gemini Pro
+              uses: coderabbitai/ai-pr-reviewer@latest
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
