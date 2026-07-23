@@ -1,0 +1,23 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "ConnectionStrings": {
+    "Default": "Host=localhost;Port=5433;Database=kudosquest;Username=postgres;Password=YOUR_DB_PASSWORD"
+  },
+  "Jwt": {
+    "Issuer": "kudosquest",
+    "Audience": "kudosquest",
+    "Key": "CHANGE_ME_TO_A_LONG_RANDOM_SECRET_AT_LEAST_32_CHARS",
+    "ExpirationMinutes": 10080
+  },
+  "Strava": {
+    "ClientId": "YOUR_CLIENT_ID",
+    "ClientSecret": "YOUR_CLIENT_SECRET",
+    "RedirectUri": "http://localhost:8080/api/auth/callback",
+    "Scopes": "read,activity:read_all,profile:read_all"
+  }
+}

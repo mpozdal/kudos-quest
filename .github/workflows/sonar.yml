@@ -1,45 +1,82 @@
 name: SonarCloud Analysis
 
 on:
-    push:
-        branches: ['main']
-    pull_request:
-        branches: ['main']
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
 
 jobs:
-    build-and-analyze:
-        runs-on: ubuntu-latest
+  test:
+    name: Test
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: Setup Java 17
-              uses: actions/setup-java@v4
-              with:
-                  java-version: '17'
-                  distribution: 'temurin'
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
 
-            - name: Setup .NET 10
-              uses: actions/setup-dotnet@v4
-              with:
-                  dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore backend/KudosQuest.slnx
 
-            - name: Install SonarScanner for .NET
-              run: dotnet tool install --global dotnet-sonarscanner
+      - name: Run tests
+        run: dotnet test backend/KudosQuest.slnx --configuration Release --no-restore --verbosity normal
 
-            - name: Begin SonarCloud Analysis
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-              run: dotnet sonarscanner begin /k:"mpozdal_kudos-quest" /o:"mpozdal" /d:sonar.token="${SONAR_TOKEN}" /d:sonar.host.url="https://sonarcloud.io"
+  build-and-analyze:
+    name: SonarCloud Analysis
+    needs: test
+    runs-on: ubuntu-latest
 
-            - name: Build project
-              run: dotnet build backend/KudosQuest.slnx --configuration Release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-            - name: End SonarCloud Analysis
-              env:
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-              run: dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install SonarScanner for .NET
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Begin SonarCloud Analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >
+          dotnet sonarscanner begin
+          /k:"mpozdal_kudos-quest"
+          /o:"mpozdal"
+          /d:sonar.token="${SONAR_TOKEN}"
+          /d:sonar.host.url="https://sonarcloud.io"
+          /d:sonar.cs.opencover.reportsPaths="${{ github.workspace }}/backend/TestResults/**/coverage.opencover.xml"
+          /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs,**/*.example,**/obj/**,**/*OpenApiXmlCommentSupport*"
+
+      - name: Build project
+        run: dotnet build backend/KudosQuest.slnx --configuration Release
+
+      - name: Run tests with coverage
+        run: >
+          dotnet test backend/KudosQuest.slnx
+          --configuration Release
+          --no-build
+          --collect:"XPlat Code Coverage;Format=opencover"
+          --results-directory ${{ github.workspace }}/backend/TestResults
+          --verbosity normal
+
+      - name: End SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
