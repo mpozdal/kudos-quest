@@ -1,11 +1,11 @@
 using KudosQuest.Application.Common.Auth;
-using KudosQuest.Application.Common.Persistence;
 using KudosQuest.Application.Common.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace KudosQuest.Application.Common.Persistence;
 
-public sealed class EfStravaTokenStore(AppDbContext db) : IStravaTokenStore
+public sealed class EfStravaTokenStore(AppDbContext db, ISensitiveDataProtector dataProtector)
+    : IStravaTokenStore
 {
     public async Task SaveAsync(StoredStravaTokens tokens, CancellationToken cancellationToken = default)
     {
@@ -33,6 +33,9 @@ public sealed class EfStravaTokenStore(AppDbContext db) : IStravaTokenStore
             athlete.UpdatedAt = now;
         }
 
+        var protectedAccessToken = dataProtector.Protect(tokens.AccessToken);
+        var protectedRefreshToken = dataProtector.Protect(tokens.RefreshToken);
+
         var credential = await db.StravaCredentials.FirstOrDefaultAsync(
             x => x.AthleteId == tokens.AthleteId,
             cancellationToken
@@ -44,8 +47,8 @@ public sealed class EfStravaTokenStore(AppDbContext db) : IStravaTokenStore
                 new StravaCredential
                 {
                     AthleteId = tokens.AthleteId,
-                    AccessToken = tokens.AccessToken,
-                    RefreshToken = tokens.RefreshToken,
+                    AccessToken = protectedAccessToken,
+                    RefreshToken = protectedRefreshToken,
                     ExpiresAt = tokens.ExpiresAt,
                     Scope = tokens.Scope,
                     UpdatedAt = now,
@@ -54,8 +57,8 @@ public sealed class EfStravaTokenStore(AppDbContext db) : IStravaTokenStore
         }
         else
         {
-            credential.AccessToken = tokens.AccessToken;
-            credential.RefreshToken = tokens.RefreshToken;
+            credential.AccessToken = protectedAccessToken;
+            credential.RefreshToken = protectedRefreshToken;
             credential.ExpiresAt = tokens.ExpiresAt;
             credential.Scope = tokens.Scope;
             credential.UpdatedAt = now;
@@ -90,8 +93,8 @@ public sealed class EfStravaTokenStore(AppDbContext db) : IStravaTokenStore
         return new StoredStravaTokens
         {
             AthleteId = row.Id,
-            AccessToken = row.Credential.AccessToken,
-            RefreshToken = row.Credential.RefreshToken,
+            AccessToken = dataProtector.Unprotect(row.Credential.AccessToken),
+            RefreshToken = dataProtector.Unprotect(row.Credential.RefreshToken),
             ExpiresAt = row.Credential.ExpiresAt,
             Scope = row.Credential.Scope,
             FirstName = row.FirstName,
@@ -102,7 +105,10 @@ public sealed class EfStravaTokenStore(AppDbContext db) : IStravaTokenStore
 
     public async Task DeleteAsync(long athleteId, CancellationToken cancellationToken = default)
     {
-        var credential = await db.StravaCredentials.FirstOrDefaultAsync(x => x.AthleteId == athleteId, cancellationToken);
+        var credential = await db.StravaCredentials.FirstOrDefaultAsync(
+            x => x.AthleteId == athleteId,
+            cancellationToken
+        );
 
         if (credential is not null)
         {

@@ -47,6 +47,9 @@ public static class DependencyInjection
             configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("Connection string 'Default' is missing.");
 
+        services.AddDataProtection();
+        services.AddSingleton<ISensitiveDataProtector, SensitiveDataProtector>();
+
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
         services.AddHttpClient<IStravaOAuthClient, StravaOAuthClient>();
@@ -60,15 +63,18 @@ public static class DependencyInjection
 
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.MapInboundClaims = false;
-                var sp = services.BuildServiceProvider();
-                var jwtOptions = sp.GetRequiredService<IOptions<JwtOptions>>().Value;
-                options.TokenValidationParameters = JwtTokenService.CreateValidationParameters(
-                    jwtOptions
-                );
-            });
+            .AddJwtBearer();
+
+        services
+            .AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<IOptions<JwtOptions>>(
+                (bearerOptions, jwtOptions) =>
+                {
+                    bearerOptions.MapInboundClaims = false;
+                    bearerOptions.TokenValidationParameters =
+                        JwtTokenService.CreateValidationParameters(jwtOptions.Value);
+                }
+            );
 
         services.AddAuthorization();
         services.AddProblemDetails();
