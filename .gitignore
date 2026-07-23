@@ -1,0 +1,54 @@
+ # .NET
+
+**/bin/
+**/obj/
+**/out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.DotSettings.user
+
+# NuGet
+
+*.nupkg
+**/packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Test / coverage
+
+TestResults/
+[Cc]overage/
+*.coverage
+*.coveragexml
+
+# IDE / OS
+
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+
+.env
+.env.*
+!.env.example
+**/appsettings.*.local.json
+secrets.json
+
+# Docker
+
+docker-compose.override.yml
+
+# Logs
+
+*.log
+logs/
+
+# Cursor
+
+.cursor/

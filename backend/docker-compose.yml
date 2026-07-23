@@ -1,0 +1,22 @@
+services:
+    api:
+      build: .
+      ports:
+        - "8080:8080"
+      environment:
+        ASPNETCORE_ENVIRONMENT: Development
+        ConnectionStrings__Default: Host=db;Port=5432;Database=kudosquest;Username=postgres;Password=postgres
+      depends_on:
+        - db
+    db:
+      image: postgres:16-alpine
+      environment:
+        POSTGRES_DB: kudosquest
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+      ports:
+        - "5432:5432"
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+volumes:
+    pgdata:
