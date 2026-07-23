@@ -75,6 +75,28 @@ public sealed class RevokeStravaAccessHandlerTests
         await _tokenStore.Received(1).DeleteAsync(10, Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task HandleAsync_WhenRefreshTokenMissing_RevokesAccessToken()
+    {
+        var user = CreateUser(10);
+        var stored = new StoredStravaTokens
+        {
+            AthleteId = 10,
+            AccessToken = "access",
+            RefreshToken = " ",
+            ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
+            Scope = "read",
+        };
+        _tokenStore.GetAsync(10, Arg.Any<CancellationToken>()).Returns(stored);
+
+        await _sut.HandleAsync(user);
+
+        await _oauthClient
+            .Received(1)
+            .RevokeAsync(stored.AccessToken, "access_token", Arg.Any<CancellationToken>());
+        await _tokenStore.Received(1).DeleteAsync(10, Arg.Any<CancellationToken>());
+    }
+
     private static ClaimsPrincipal CreateUser(long athleteId) =>
         new(new ClaimsIdentity([new Claim("sub", athleteId.ToString())]));
 

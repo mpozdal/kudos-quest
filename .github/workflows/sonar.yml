@@ -62,7 +62,7 @@ jobs:
           /d:sonar.token="${SONAR_TOKEN}"
           /d:sonar.host.url="https://sonarcloud.io"
           /d:sonar.cs.opencover.reportsPaths="${{ github.workspace }}/backend/TestResults/**/coverage.opencover.xml"
-          /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs,**/*.example"
+          /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs,**/*.example,**/obj/**,**/*OpenApiXmlCommentSupport*"
 
       - name: Build project
         run: dotnet build backend/KudosQuest.slnx --configuration Release
