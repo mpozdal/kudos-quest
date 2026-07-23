@@ -9,5 +9,6 @@ public sealed class StravaOptions
     public string RedirectUri { get; set; } = string.Empty;
     public string AuthorizeUrl { get; set; } = "https://www.strava.com/oauth/authorize";
     public string TokenUrl { get; set; } = "https://www.strava.com/oauth/token";
+    public string RevokeUrl { get; set; } = "https://www.strava.com/oauth/revoke";
     public string Scopes { get; set; } = "read,activity:read_all,profile:read_all";
 }

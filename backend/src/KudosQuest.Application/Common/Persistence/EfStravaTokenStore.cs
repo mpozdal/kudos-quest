@@ -99,4 +99,16 @@ public sealed class EfStravaTokenStore(AppDbContext db) : IStravaTokenStore
             Profile = row.Profile,
         };
     }
+
+    public async Task DeleteAsync(long athleteId, CancellationToken cancellationToken = default)
+    {
+        var credential = await db.StravaCredentials.FirstOrDefaultAsync(x => x.AthleteId == athleteId, cancellationToken);
+
+        if (credential is not null)
+        {
+            db.StravaCredentials.Remove(credential);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
 }

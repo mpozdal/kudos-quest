@@ -10,9 +10,7 @@ public sealed class GetMeHandler(IStravaTokenStore tokenStore)
         CancellationToken cancellationToken = default
     )
     {
-        var athleteIdValue = user.FindFirstValue("sub");
-
-        if (string.IsNullOrWhiteSpace(athleteIdValue) || !long.TryParse(athleteIdValue, out var athleteId))
+        if (!user.TryGetAthleteId(out var athleteId))
         {
             return null;
         }

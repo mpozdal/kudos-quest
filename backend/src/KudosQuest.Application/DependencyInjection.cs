@@ -3,6 +3,7 @@ using KudosQuest.Application.Common.Persistence;
 using KudosQuest.Application.Common.Strava;
 using KudosQuest.Application.Features.Athletes.GetMe;
 using KudosQuest.Application.Features.Auth.HandleStravaCallback;
+using KudosQuest.Application.Features.Auth.RevokeStravaAccess;
 using KudosQuest.Application.Features.Auth.StartStravaOAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Routing;
@@ -54,6 +55,8 @@ public static class DependencyInjection
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddScoped<HandleStravaCallbackHandler>();
         services.AddScoped<GetMeHandler>();
+        services.AddScoped<RevokeStravaAccessHandler>();
+        services.AddScoped<IStravaAccessTokenProvider, StravaAccessTokenProvider>();
 
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -77,6 +80,7 @@ public static class DependencyInjection
     {
         StartStravaOAuthEndpoint.Map(app);
         HandleStravaCallbackEndpoint.Map(app);
+        RevokeStravaAccessEndpoint.Map(app);
         GetMeEndpoint.Map(app);
         return app;
     }
