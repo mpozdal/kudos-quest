@@ -3,4 +3,7 @@
     <Project Path="src/KudosQuest.API/KudosQuest.API.csproj" />
     <Project Path="src/KudosQuest.Application/KudosQuest.Application.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KudosQuest.Application.Tests/KudosQuest.Application.Tests.csproj" />
+  </Folder>
 </Solution>
